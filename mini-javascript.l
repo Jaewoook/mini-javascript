@@ -1,0 +1,162 @@
+%{
+#include <stdio.h>
+
+int column;
+void yyerror(const char *s);
+int yylex();
+void count();
+
+// enum TOKEN {
+//     TOKEN_EOF, VAR, LET, CONST, FUNCTION, ARROW_FUNCTION, SEMICOLON, COLON, IDENTIFIER,
+//     FOR, WHILE, IF, ELSE, SWITCH, CASE, BREAK, CONTINUE, NEW, DELETE,
+//     LPAREN, RPAREN, LBRACE, RBRACE, LBRACKET, RBRACKET, INSTANCEOF, IN, OF, THIS,
+//     LITERAL_TRUE, LITERAL_FALSE, LITERAL_NAN, LITERAL_NULL, LITERAL_UNDEFINED,
+//     DQUOTE, SQUOTE, TQUOTE,
+//     PLUS, MINUS, MULTIPLY, DIVIDE, EQ, NOT_EQ, NOT, DOT, AND, OR, COMMA, MODULO, TERNARY, INCREASE, DECREASE,
+//     ADD_ASSIGN, SUBTRACT_ASSIGN, MULTIPLY_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
+//     LT, GT, LTE, GTE, ERR, NUMBER
+// };
+
+%}
+
+letter [a-zA-Z_]
+digit  [0-9]
+space [" "\t\r]
+
+%%
+var                             { count(); return VAR; }
+let                             { count(); return LET; }
+const                           { count(); return CONST; }
+function                        { count(); return FUNCTION; }
+"=>"                            { count(); return ARROW_FUNCTION; }
+for                             { count(); return FOR; }
+while                           { count(); return WHILE; }
+if                              { count(); return IF; }
+else                            { count(); return ELSE; }
+switch                          { count(); return SWITCH; }
+case                            { count(); return CASE; }
+break                           { count(); return BREAK; }
+continue                        { count(); return CONTINUE; }
+new                             { count(); return NEW; }
+delete                          { count(); return DELETE; }
+instanceof                      { count(); return INSTANCEOF; }
+in                              { count(); return IN; }
+of                              { count(); return OF; }
+this                            { count(); return THIS; }
+
+true                            {
+                                    count();
+                                    yylval.string_val = "true";
+                                    return LITERAL_TRUE;
+                                }
+false                           {
+                                    count();
+                                    yylval.string_val = "false";
+                                    return LITERAL_FALSE;
+                                }
+NaN                             {
+                                    count();
+                                    yylval.string_val = "NaN";
+                                    return LITERAL_NAN;
+                                }
+NULL                            {
+                                    count();
+                                    yylval.string_val = "null";
+                                    return LITERAL_NULL;
+                                }
+UNDEFINED                       {
+                                    count();
+                                    yylval.string_val = "undefined";
+                                    return LITERAL_UNDEFINED;
+                                }
+
+\"                              { count(); return DQUOTE; }
+\'                              { count(); return SQUOTE; }
+\`                              { count(); return TQUOTE; }
+";"                             { count(); return SEMICOLON; }
+":"                             { count(); return COLON; }
+"("                             { count(); return LPAREN; }
+")"                             { count(); return RPAREN; }
+"{"                             { count(); return LBRACE; }
+"}"                             { count(); return RBRACE; }
+"["                             { count(); return LBRACKET; }
+"]"                             { count(); return RBRACKET; }
+
+"+"                             { count(); return PLUS; }
+"-"                             { count(); return MINUS; }
+"*"                             { count(); return MULTIPLY; }
+"/"                             { count(); return DIVIDE; }
+"%"                             { count(); return MODULO; }
+"="                             { count(); return EQ; }
+"!="                            { count(); return NOT_EQ; }
+"&&"                            { count(); return AND; }
+"||"                            { count(); return OR; }
+"!"                             { count(); return NOT; }
+"<"                             { count(); return LT; }
+">"                             { count(); return GT; }
+"<="                            { count(); return LTE; }
+">="                            { count(); return GTE; }
+","                             { count(); return COMMA; }
+"?"                             { count(); return TERNARY; }
+"++"                            { count(); return INCREASE; }
+"--"                            { count(); return DECREASE; }
+
+"+="                            { count(); return ADD_ASSIGN; }
+"-="                            { count(); return SUBTRACT_ASSIGN; }
+"*="                            { count(); return MULTIPLY_ASSIGN; }
+"/="                            { count(); return DIVIDE_ASSIGN; }
+"%="                            { count(); return MODULO_ASSIGN; }
+
+\.                              { count(); return DOT; }
+
+Infinity                        {
+                                    count();
+                                    yyval.string_val = "Infinity";
+                                    return NUMBER;
+                                }
+{letter}({letter}|{digit})*     { count(); return IDENTIFIER; }
+{digit}+                        {
+                                    count();
+                                    yylval.string_val = strdup(yytext);
+                                    return NUMBER;
+                                }
+{digit}+\.{digit}+              {
+                                    count();
+                                    yylval.double_val = strdup(yytext);
+                                    return NUMBER;
+                                }
+
+"//".*                          { count(); }
+{space}                         { count(); }
+\n                              { count(); }
+.                               { count(); return ERR; }
+%%
+
+int yywrap() {
+    return 1;
+}
+
+void count() {
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        if (yytext[i] == '\n') {
+            yylineno++;
+            column = 0;
+        } else {
+            column++;
+        }
+    }
+}
+
+/* int main() {
+    printf("JavaScript Lexer\n\n");
+
+    enum TOKEN token;
+    while (!!(token = yylex()) != TOKEN_EOF) {
+        if (token == ERR) {
+            printf("Error occurred at line %d - \"%s\"\n", yylineno, yytext);
+        } else {
+            printf("%s recognized\n", yytext);
+        }
+    }
+    return 0;
+} */
