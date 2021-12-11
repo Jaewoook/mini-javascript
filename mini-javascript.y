@@ -167,6 +167,7 @@ statement
     | for_statement
     | while_statement
     | if_statement
+    | jump_statement
     | declaration
     ;
 
@@ -188,6 +189,15 @@ for_statement
 
 while_statement
     : WHILE LPAREN expression RPAREN scope { puts("while statement") }
+    ;
+
+jump_statement
+    : BREAK
+    | BREAK SEMICOLON
+    | CONTINUE
+    | CONTINUE SEMICOLON
+    | RETURN
+    | RETURN SEMICOLON
     ;
 
 scope
@@ -269,5 +279,5 @@ int main(int argc, char *argv[]) {
 
 void yyerror(const char *msg) {
     fflush(stdout);
-    fprintf(stderr, "%s:%d:%d: %s\n\t%s\n\n", file_path, yylineno, column, msg, yytext);
+    fprintf(stderr, "%s:%d:%d: %s\n\t%s\n\n", file_path, yylineno, (int) (column - yyleng), msg, yytext);
 }
