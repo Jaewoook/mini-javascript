@@ -36,6 +36,7 @@ else                            { count(); return ELSE; }
 return                          { count(); return RETURN; }
 switch                          { count(); return SWITCH; }
 case                            { count(); return CASE; }
+default                         { count(); return DEFAULT; }
 break                           { count(); return BREAK; }
 continue                        { count(); return CONTINUE; }
 new                             { count(); return NEW; }
@@ -59,7 +60,7 @@ false                           {
                                 }
 NaN                             {
                                     count();
-                                    yylval.string_val = "NaN";
+                                    yylval.num_val = "NaN";
                                     return LITERAL_NAN;
                                 }
 NULL                            {
@@ -90,8 +91,11 @@ UNDEFINED                       {
 "*"                             { count(); return MULTIPLY; }
 "/"                             { count(); return DIVIDE; }
 "%"                             { count(); return MODULO; }
-"="                             { count(); return EQ; }
+"="                             { count(); return ASSIGN; }
+"=="                            { count(); return EQ; }
+"==="                           { count(); return EXACTLY_EQ; }
 "!="                            { count(); return NOT_EQ; }
+"!=="                           { count(); return EXACTLY_NOT_EQ; }
 "&&"                            { count(); return AND; }
 "||"                            { count(); return OR; }
 "!"                             { count(); return NOT; }
@@ -115,7 +119,7 @@ UNDEFINED                       {
 Infinity                        {
                                     count();
                                     yylval.num_val = "Infinity";
-                                    return NUMBER;
+                                    return LITERAL_INFINITY;
                                 }
 {letter}({letter}|{digit})*     {
                                     count();
@@ -149,6 +153,8 @@ Infinity                        {
                                     return STRING;
                                 }
 
+^\'use[ ]strict\';              { count(); return STRICT_MODE; }
+^\"use[ ]strict\";              { count(); return STRICT_MODE; }
 "//".*                          { count(); }
 {space}                         { count(); }
 \n                              { count(); }
