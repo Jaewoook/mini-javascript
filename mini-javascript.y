@@ -7,9 +7,14 @@ void debug(const char *msg);
 
 
 %union {
+    char *boolean_val;
+    char *undefined_val;
+    char *object_val;
     char *string_val;
-    char *num_val;
+    char *number_val;
 }
+
+%type <string_val> identifier
 
 %token VAR
 %token LET
@@ -18,7 +23,6 @@ void debug(const char *msg);
 %token ARROW_FUNCTION                   //  =>
 %token SEMICOLON                        //  ;
 %token COLON                            //  :
-%token IDENTIFIER
 %token FOR
 %token WHILE
 %token DO
@@ -32,10 +36,8 @@ void debug(const char *msg);
 %token CONTINUE
 %token NEW
 %token DELETE
+%token TYPEOF
 %token INSTANCEOF
-%token IN
-%token OF
-%token THIS
 %token ASYNC
 %token AWAIT
 %token LPAREN                           //  (
@@ -44,15 +46,12 @@ void debug(const char *msg);
 %token RBRACE                           //  }
 %token LBRACKET                         //  [
 %token RBRACKET                         //  ]
-%token <string_val> LITERAL_TRUE        //  true
-%token <string_val> LITERAL_FALSE       //  false
-%token <num_val> LITERAL_NAN            //  NaN
-%token <num_val> LITERAL_INFINITY       //  Infinity
+%token <boolean_val> LITERAL_TRUE        //  true
+%token <boolean_val> LITERAL_FALSE       //  false
+%token <number_val> LITERAL_NAN            //  NaN
+%token <number_val> LITERAL_INFINITY       //  Infinity
 %token <string_val> LITERAL_NULL        //  null
 %token <string_val> LITERAL_UNDEFINED   //  undefined
-%token DQUOTE
-%token SQUOTE
-%token TQUOTE
 %token PLUS
 %token MINUS
 %token MULTIPLY
@@ -81,8 +80,9 @@ void debug(const char *msg);
 %token LTE                              //  <=
 %token GTE                              //  >=
 %token STRICT_MODE                      //  "use strict";
-%token <num_val> NUMBER
+%token <number_val> NUMBER
 %token <string_val> STRING
+%token <string_val> IDENTIFIER
 
 %error-verbose
 
@@ -95,6 +95,10 @@ script
 statements
     : statement
     | statements statement
+    ;
+
+identifier
+    : IDENTIFIER { $$ = $1; }
     ;
 
 value_literal
@@ -120,10 +124,21 @@ array_elements
 
 object_literal
     : LBRACE RBRACE
+    | LBRACE object_pair RBRACE
+    ;
+
+object_pair
+    : object_key COLON assignment_expression
+    | object_pair COMMA object_key COLON assignment_expression
+    ;
+
+object_key
+    : STRING
+    | NUMBER
     ;
 
 primary_expression
-    : IDENTIFIER
+    : identifier
     | value_literal
     | array_literal
     | object_literal
@@ -136,6 +151,9 @@ function_declaration
     : FUNCTION IDENTIFIER LPAREN arguments RPAREN scope
     | FUNCTION LPAREN arguments RPAREN scope
     | LPAREN arguments RPAREN ARROW_FUNCTION scope
+    | ASYNC FUNCTION IDENTIFIER LPAREN arguments RPAREN scope
+    | ASYNC FUNCTION LPAREN arguments RPAREN scope
+    | ASYNC LPAREN arguments RPAREN ARROW_FUNCTION scope
     ;
 
 postfix_expression
@@ -286,6 +304,11 @@ unary_operator
     : NOT
     | PLUS
     | MINUS
+    | NEW
+    | DELETE
+    | INSTANCEOF
+    | TYPEOF
+    | AWAIT
     ;
 
 multiplicative_operator
