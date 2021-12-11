@@ -21,6 +21,7 @@ void debug(const char *msg);
 %token IDENTIFIER
 %token FOR
 %token WHILE
+%token DO
 %token IF
 %token ELSE
 %token RETURN
@@ -201,7 +202,9 @@ statement
     : expression_statement
     | for_statement
     | while_statement
+    | do_while_statement
     | if_statement
+    | switch_statement
     | jump_statement
     | declaration
     | STRICT_MODE { debug("strict mode enabled") }
@@ -223,25 +226,30 @@ for_statement
     ;
 
 while_statement
-    : WHILE LPAREN expression RPAREN scope { debug("while statement"); }
+    : WHILE LPAREN assignment_expression RPAREN scope { debug("while statement"); }
+    ;
+
+do_while_statement
+    : DO scope WHILE LPAREN assignment_expression RPAREN SEMICOLON { debug("do-while statement") }
     ;
 
 switch_statement
-    : SWITCH LPAREN expression RPAREN { debug("switch statement"); }
+    : SWITCH LPAREN assignment_expression RPAREN switch_body { debug("switch statement"); }
     ;
 
 switch_body
-    : LBRACE case_statements RBRACE
+    : LBRACE RBRACE
+    | LBRACE case_statements RBRACE
     ;
 
 case_statements
-    : /* None */
-    | case_statement
+    : case_statement
     | case_statements case_statement
     ;
 
 case_statement
-    : CASE IDENTIFIER COLON statements
+    : CASE assignment_expression COLON statements
+    | CASE assignment_expression COLON case_statement
     | DEFAULT COLON statements
     ;
 
@@ -254,7 +262,8 @@ jump_statement
     ;
 
 scope
-    : LBRACE statements RBRACE { debug("scope"); }
+    : LBRACE RBRACE { debug("empty scope"); }
+    | LBRACE statements RBRACE { debug("scope"); }
     ;
 
 declaration

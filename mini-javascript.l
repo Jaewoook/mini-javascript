@@ -8,7 +8,7 @@ void count();
 
 // enum TOKEN {
 //     TOKEN_EOF, VAR, LET, CONST, FUNCTION, ARROW_FUNCTION, SEMICOLON, COLON, IDENTIFIER,
-//     FOR, WHILE, IF, ELSE, SWITCH, CASE, BREAK, CONTINUE, NEW, DELETE,
+//     FOR, WHILE, DO, IF, ELSE, SWITCH, CASE, BREAK, CONTINUE, NEW, DELETE,
 //     LPAREN, RPAREN, LBRACE, RBRACE, LBRACKET, RBRACKET, INSTANCEOF, IN, OF, THIS,
 //     LITERAL_TRUE, LITERAL_FALSE, LITERAL_NAN, LITERAL_NULL, LITERAL_UNDEFINED,
 //     DQUOTE, SQUOTE, TQUOTE,
@@ -31,6 +31,7 @@ function                        { count(); return FUNCTION; }
 "=>"                            { count(); return ARROW_FUNCTION; }
 for                             { count(); return FOR; }
 while                           { count(); return WHILE; }
+do                              { count(); return DO; }
 if                              { count(); return IF; }
 else                            { count(); return ELSE; }
 return                          { count(); return RETURN; }
