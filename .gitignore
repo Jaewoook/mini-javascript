@@ -2,4 +2,4 @@
 lex.yy.c
 y.tab.*
 javascript
-
+javascript-debug
