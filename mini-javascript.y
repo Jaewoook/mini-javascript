@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 extern int column;
+int yylex();
 void yyerror(const char *msg);
 %}
 
@@ -19,6 +20,7 @@ void yyerror(const char *msg);
 %token WHILE
 %token IF
 %token ELSE
+%token RETURN
 %token SWITCH
 %token CASE
 %token BREAK
@@ -29,6 +31,8 @@ void yyerror(const char *msg);
 %token IN
 %token OF
 %token THIS
+%token ASYNC
+%token AWAIT
 %token LPAREN
 %token RPAREN
 %token LBRACE
@@ -69,20 +73,26 @@ void yyerror(const char *msg);
 %token GTE
 %token ERR
 %token NUMBER
+%token STRING
 
 %union {
     char *string_val;
-    double double_val;
+    char *num_val;
 }
 
 %error-verbose
-%start statement
 
 %%
+
+start
+    : statement
+    | start statement
+    ;
 
 primary_expression
     : IDENTIFIER
     | NUMBER
+    | STRING
     | LPAREN expression RPAREN
     | assignment_expression
     ;
@@ -158,6 +168,7 @@ statement
     | for_statement
     | while_statement
     | if_statement
+    | declaration
     ;
 
 expression_statement
@@ -196,6 +207,9 @@ function_declaration
 
 variable_declaration
     : type_specifier IDENTIFIER
+    | type_specifier IDENTIFIER SEMICOLON
+    | type_specifier IDENTIFIER EQ primary_expression
+    | type_specifier IDENTIFIER EQ primary_expression SEMICOLON
     ;
 
 type_specifier

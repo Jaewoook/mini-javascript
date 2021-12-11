@@ -5,7 +5,7 @@ YACC=bison
 LEX_OUTPUT=lex.yy.c
 YACC_OUTPUT=y.tab.c y.tab.h
 CC=gcc
-CCFLAGS=-Wall -ly -ll -o
+CCFLAGS=-std=c17 -W -ly -ll -o
 
 all: ${OUTPUT}
 

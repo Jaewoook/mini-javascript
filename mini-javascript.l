@@ -1,9 +1,9 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
 
 int column;
 void yyerror(const char *s);
-int yylex();
 void count();
 
 // enum TOKEN {
@@ -14,7 +14,7 @@ void count();
 //     DQUOTE, SQUOTE, TQUOTE,
 //     PLUS, MINUS, MULTIPLY, DIVIDE, EQ, NOT_EQ, NOT, DOT, AND, OR, COMMA, MODULO, TERNARY, INCREASE, DECREASE,
 //     ADD_ASSIGN, SUBTRACT_ASSIGN, MULTIPLY_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
-//     LT, GT, LTE, GTE, ERR, NUMBER
+//     LT, GT, LTE, GTE, ERR, NUMBER STRING
 // };
 
 %}
@@ -33,6 +33,7 @@ for                             { count(); return FOR; }
 while                           { count(); return WHILE; }
 if                              { count(); return IF; }
 else                            { count(); return ELSE; }
+return                          { count(); return RETURN; }
 switch                          { count(); return SWITCH; }
 case                            { count(); return CASE; }
 break                           { count(); return BREAK; }
@@ -43,6 +44,8 @@ instanceof                      { count(); return INSTANCEOF; }
 in                              { count(); return IN; }
 of                              { count(); return OF; }
 this                            { count(); return THIS; }
+async                           { count(); return ASYNC; }
+await                           { count(); return AWAIT; }
 
 true                            {
                                     count();
@@ -111,19 +114,35 @@ UNDEFINED                       {
 
 Infinity                        {
                                     count();
-                                    yyval.string_val = "Infinity";
+                                    yylval.num_val = "Infinity";
                                     return NUMBER;
                                 }
 {letter}({letter}|{digit})*     { count(); return IDENTIFIER; }
 {digit}+                        {
                                     count();
-                                    yylval.string_val = strdup(yytext);
+                                    yylval.num_val = strdup(yytext);
                                     return NUMBER;
                                 }
 {digit}+\.{digit}+              {
                                     count();
-                                    yylval.double_val = strdup(yytext);
+                                    yylval.num_val = strdup(yytext);
                                     return NUMBER;
+                                }
+
+\"[^"]*\"                       {
+                                    count();
+                                    yylval.string_val = strdup(yytext);
+                                    return STRING;
+                                }
+\'[^']*\'                       {
+                                    count();
+                                    yylval.string_val = strdup(yytext);
+                                    return STRING;
+                                }
+\`[^`]*\`                       {
+                                    count();
+                                    yylval.string_val = strdup(yytext);
+                                    return STRING;
                                 }
 
 "//".*                          { count(); }
