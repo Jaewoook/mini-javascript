@@ -71,7 +71,6 @@ void yyerror(const char *msg);
 %token GT
 %token LTE
 %token GTE
-%token ERR
 %token NUMBER
 %token STRING
 

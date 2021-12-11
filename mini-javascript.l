@@ -14,12 +14,12 @@ void count();
 //     DQUOTE, SQUOTE, TQUOTE,
 //     PLUS, MINUS, MULTIPLY, DIVIDE, EQ, NOT_EQ, NOT, DOT, AND, OR, COMMA, MODULO, TERNARY, INCREASE, DECREASE,
 //     ADD_ASSIGN, SUBTRACT_ASSIGN, MULTIPLY_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
-//     LT, GT, LTE, GTE, ERR, NUMBER STRING
+//     LT, GT, LTE, GTE, NUMBER STRING
 // };
 
 %}
 
-letter [a-zA-Z_]
+letter [a-zA-Z_$]
 digit  [0-9]
 space [" "\t\r]
 
@@ -117,7 +117,11 @@ Infinity                        {
                                     yylval.num_val = "Infinity";
                                     return NUMBER;
                                 }
-{letter}({letter}|{digit})*     { count(); return IDENTIFIER; }
+{letter}({letter}|{digit})*     {
+                                    count();
+                                    yylval.string_val = strdup(yytext);
+                                    return IDENTIFIER;
+                                }
 {digit}+                        {
                                     count();
                                     yylval.num_val = strdup(yytext);
@@ -148,7 +152,7 @@ Infinity                        {
 "//".*                          { count(); }
 {space}                         { count(); }
 \n                              { count(); }
-.                               { count(); return ERR; }
+.                               { count(); yyerror("Invalid token"); }
 %%
 
 int yywrap() {
