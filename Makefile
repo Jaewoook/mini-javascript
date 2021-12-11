@@ -7,10 +7,13 @@ YACC_OUTPUT=y.tab.c y.tab.h
 CC=gcc
 CCFLAGS=-std=c17 -W -ly -ll -o
 
-all: ${OUTPUT}
+all: $(OUTPUT) debug
 
 ${OUTPUT}: ${LEX_OUTPUT} ${YACC_OUTPUT}
-	${CC} ${CCFLAGS} ${OUTPUT} y.tab.c
+	${CC} -DYYDEBUG=0 ${CCFLAGS} ${OUTPUT} y.tab.c
+
+debug: ${LEX_OUTPUT} ${YACC_OUTPUT}
+	${CC} -DYYDEBUG=1 ${CCFLAGS} ${OUTPUT}-debug y.tab.c
 
 ${LEX_OUTPUT}: ${SOURCE_PREFIX}.l
 	flex ${SOURCE_PREFIX}.l
