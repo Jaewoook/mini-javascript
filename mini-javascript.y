@@ -355,6 +355,7 @@ int main(int argc, char *argv[]) {
     yydebug = 1;
     #endif
 
+    int ret = 0;
     if (argc != 2) {
         fprintf(stderr, "Error: input file not provided\nUsage: ./javascript [FILE]\n");
         return 1;
@@ -369,9 +370,10 @@ int main(int argc, char *argv[]) {
         printf("\nParsing complete.\n");
     } else {
         printf("\nParsing failed.\n");
+        ret = 1;
     }
     fclose(yyin);
-    return 0;
+    return ret;
 }
 
 void yyerror(const char *msg) {
