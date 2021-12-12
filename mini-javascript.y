@@ -130,18 +130,20 @@ object_literal
 object_pair
     : object_key COLON assignment_expression
     | object_pair COMMA object_key COLON assignment_expression
+    | object_pair COMMA
     ;
 
 object_key
     : STRING
     | NUMBER
+    | IDENTIFIER
     ;
 
 primary_expression
     : identifier
-    | value_literal
-    | array_literal
-    | object_literal
+    | value_literal { debug("value literal"); }
+    | array_literal { debug("array literal"); }
+    | object_literal { debug("object literal"); }
     | LPAREN expression RPAREN
     | function_declaration { debug("function declaration") }
     ;
@@ -162,7 +164,7 @@ postfix_expression
     | postfix_expression DOT primary_expression
     | postfix_expression LPAREN RPAREN
     | postfix_expression LPAREN arguments RPAREN
-    /* | postfix_expression LBRACKET expression RBRACKET */
+    | postfix_expression LBRACKET expression RBRACKET
     ;
 
 unary_expression
@@ -189,6 +191,7 @@ relational_expression
     | relational_expression LTE additive_expression
     | relational_expression GT additive_expression
     | relational_expression GTE additive_expression
+    | relational_expression INSTANCEOF additive_expression
     ;
 
 equality_expression
@@ -248,7 +251,8 @@ if_statement
     ;
 
 for_statement
-    : FOR LPAREN declaration SEMICOLON expression SEMICOLON expression RPAREN scope { debug("for statement"); }
+    : FOR LPAREN variable_declaration SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement"); }
+    | FOR LPAREN assignment_expression SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement"); }
     ;
 
 while_statement
