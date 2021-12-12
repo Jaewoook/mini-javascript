@@ -19,13 +19,19 @@ $ make
 $ ./lex.sh
 
 # NOTE: if you can't run .sh file, run this command first
-$ chmod +x lex.sh
+$ chmod +x *.sh
 ```
 
 ## Usage
 
 ```sh
-./javascript [FILE]
+$ ./javascript [FILE]
+```
+
+## Test
+
+```sh
+$ ./test.sh
 ```
 
 ## Author
