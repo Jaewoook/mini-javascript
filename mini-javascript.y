@@ -144,7 +144,6 @@ primary_expression
     | object_literal
     | LPAREN expression RPAREN
     | function_declaration { debug("function declaration") }
-    | function_declaration SEMICOLON { debug("function declaration") }
     ;
 
 function_declaration
@@ -158,11 +157,11 @@ function_declaration
 
 postfix_expression
     : primary_expression
+    | primary_expression INCREASE
+    | primary_expression DECREASE
+    | postfix_expression DOT primary_expression
     | postfix_expression LPAREN RPAREN
     | postfix_expression LPAREN arguments RPAREN
-    | postfix_expression DOT postfix_expression
-    | postfix_expression INCREASE
-    | postfix_expression DECREASE
     /* | postfix_expression LBRACKET expression RBRACKET */
     ;
 
@@ -173,22 +172,31 @@ unary_expression
 
 multiplicative_expression
     : unary_expression
-    | multiplicative_expression multiplicative_operator unary_expression
+    | multiplicative_expression MULTIPLY unary_expression
+    | multiplicative_expression DIVIDE unary_expression
+    | multiplicative_expression MODULO unary_expression
     ;
 
 additive_expression
     : multiplicative_expression
-    | additive_expression additive_operator multiplicative_expression
+    | additive_expression PLUS multiplicative_expression
+    | additive_expression MINUS multiplicative_expression
     ;
 
 relational_expression
     : additive_expression
-    | relational_expression relational_operator additive_expression
+    | relational_expression LT additive_expression
+    | relational_expression LTE additive_expression
+    | relational_expression GT additive_expression
+    | relational_expression GTE additive_expression
     ;
 
 equality_expression
     : relational_expression
-    | equality_expression equality_operator relational_expression
+    | equality_expression EQ relational_expression
+    | equality_expression NOT_EQ relational_expression
+    | equality_expression EXACTLY_EQ relational_expression
+    | equality_expression EXACTLY_NOT_EQ relational_expression
     ;
 
 logical_and_expression
@@ -213,7 +221,7 @@ assignment_expression
 
 expression
     : assignment_expression
-    | expression ',' assignment_expression
+    | expression COMMA assignment_expression
     ;
 
 statement
@@ -272,10 +280,9 @@ case_statement
     ;
 
 jump_statement
-    : BREAK { debug("break"); }
-    | BREAK SEMICOLON { debug("break"); }
-    | CONTINUE { debug("continue"); }
-    | CONTINUE SEMICOLON { debug("continue"); }
+    : BREAK skippable_semicolon { debug("break"); }
+    | CONTINUE skippable_semicolon { debug("continue"); }
+    | RETURN { debug("return"); }
     | RETURN expression_statement { debug("return"); }
     ;
 
@@ -285,8 +292,7 @@ scope
     ;
 
 declaration
-    : variable_declaration { debug("variable declaration") }
-    | variable_declaration SEMICOLON { debug("variable declaration") }
+    : variable_declaration skippable_semicolon { debug("variable declaration") }
     ;
 
 variable_declaration
@@ -302,38 +308,11 @@ type_specifier
 
 unary_operator
     : NOT
-    | PLUS
-    | MINUS
     | NEW
     | DELETE
     | INSTANCEOF
     | TYPEOF
     | AWAIT
-    ;
-
-multiplicative_operator
-    : MULTIPLY
-    | DIVIDE
-    | MODULO
-    ;
-
-additive_operator
-    : PLUS
-    | MINUS
-    ;
-
-relational_operator
-    : LT
-    | LTE
-    | GT
-    | GTE
-    ;
-
-equality_operator
-    : EQ
-    | NOT_EQ
-    | EXACTLY_EQ
-    | EXACTLY_NOT_EQ
     ;
 
 assignment_operator
@@ -353,7 +332,11 @@ arguments
 
 argument
     : assignment_expression
-    | function_declaration
+    ;
+
+skippable_semicolon
+    : /* Empty */
+    | SEMICOLON
     ;
 
 %%
