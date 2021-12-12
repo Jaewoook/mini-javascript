@@ -132,6 +132,17 @@ Infinity                        {
                                     return NUMBER;
                                 }
 
+[\-\+]{digit}+                        {
+                                    count();
+                                    yylval.number_val = strdup(yytext);
+                                    return NUMBER;
+                                }
+[\-\+]{digit}+\.{digit}+              {
+                                    count();
+                                    yylval.number_val = strdup(yytext);
+                                    return NUMBER;
+                                }
+
 \"[^"]*\"                       {
                                     count();
                                     yylval.string_val = strdup(yytext);
