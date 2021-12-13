@@ -15,6 +15,11 @@ const char *get_node_type_str(NODEType type) {
         case Identifier: return "identifier";
         case Literal: return "literal";
         case Operator: return "Operator";
+        case Function: return "Function";
+        case Parameter: return "Parameter";
+        case Scope:
+        case AsyncScope:
+            return "Scope";
         default: return "Error";
     }
 }
@@ -30,6 +35,12 @@ void print_node(node *node, int depth) {
     if (node->next_sibling != NULL) {
         print_node(node->next_sibling, depth);
     }
+}
+
+node *function_node(char *name, int async, node *parameters, node *statements) {
+    node *scope = put_node(async ? AsyncScope : Scope, NULL, NULL, NULL, statements);
+    node *params = put_node(Parameter, NULL, NULL, scope, parameters);
+    return put_node(Function, name, NULL, NULL, params);
 }
 
 node *identifier_node(char *name) {

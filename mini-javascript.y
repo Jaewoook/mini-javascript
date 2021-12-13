@@ -1,4 +1,5 @@
 %{
+#include <stdio.h>
 #include "parser.h"
 %}
 
@@ -9,12 +10,12 @@
 }
 
 %type <val>     value_literal object_literal array_literal
-%type <node>    script statements statement
+%type <node>    script statements statement scope
                 if_statement for_statement jump_statement while_statement do_while_statement expression_statement
                 expression primary_expression assignment_expression conditional_expression postfix_expression
                 equality_expression relational_expression additive_expression multiplicative_expression unary_expression
                 logical_or_expression logical_and_expression
-                variable_declaration function_declaration
+                variable_declaration function_declaration parameters
 
 %token VAR
 %token LET
@@ -146,12 +147,12 @@ primary_expression
     ;
 
 function_declaration
-    : FUNCTION IDENTIFIER LPAREN arguments RPAREN scope
-    | FUNCTION LPAREN arguments RPAREN scope
-    | LPAREN arguments RPAREN ARROW_FUNCTION scope
-    | ASYNC FUNCTION IDENTIFIER LPAREN arguments RPAREN scope
-    | ASYNC FUNCTION LPAREN arguments RPAREN scope
-    | ASYNC LPAREN arguments RPAREN ARROW_FUNCTION scope
+    : FUNCTION IDENTIFIER LPAREN parameters RPAREN scope { $$ = function_node($2, 0, $4, $6); }
+    | FUNCTION LPAREN parameters RPAREN scope { $$ = function_node(NULL, 0, $3, $5); }
+    | LPAREN parameters RPAREN ARROW_FUNCTION scope { $$ = function_node(NULL, 0, $2, $5); }
+    | ASYNC FUNCTION IDENTIFIER LPAREN parameters RPAREN scope { $$ = function_node($3, 1, $5, $7); }
+    | ASYNC FUNCTION LPAREN parameters RPAREN scope { $$ = function_node(NULL, 1, $4, $6); }
+    | ASYNC LPAREN parameters RPAREN ARROW_FUNCTION scope { $$ = function_node(NULL, 1, $3, $6); }
     ;
 
 postfix_expression
@@ -293,8 +294,8 @@ jump_statement
     ;
 
 scope
-    : LBRACE RBRACE { debug("empty scope", ""); }
-    | LBRACE statements RBRACE
+    : LBRACE RBRACE { $$ = NULL; debug("empty scope", ""); }
+    | LBRACE statements RBRACE { $$ = $2; }
     ;
 
 declaration
@@ -323,6 +324,14 @@ assignment_operator
     | MULTIPLY_ASSIGN
     | DIVIDE_ASSIGN
     | MODULO_ASSIGN
+    ;
+
+parameters
+    : /* None */ { $$ = NULL; debug("empty function parameter", ""); }
+    | IDENTIFIER { $$ = identifier_node($1); debug("function parameter", $1); }
+    | parameters IDENTIFIER {
+                                $$ = sibling_node($1, identifier_node($2));
+                            }
     ;
 
 arguments
