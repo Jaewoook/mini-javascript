@@ -8,9 +8,13 @@
     node *node;
 }
 
-%type <val> primary_expression type_specifier
-%type <val> expression assignment_expression conditional_expression
-            declaration variable_declaration
+%type <val>     value_literal object_literal array_literal
+%type <node>    script statements statement
+                if_statement for_statement jump_statement while_statement do_while_statement expression_statement
+                expression primary_expression assignment_expression conditional_expression postfix_expression
+                equality_expression relational_expression additive_expression multiplicative_expression unary_expression
+                logical_or_expression logical_and_expression
+                variable_declaration function_declaration
 
 %token VAR
 %token LET
@@ -86,28 +90,28 @@
 %%
 
 script
-    : statements
+    : statements { root = $1; }
     ;
 
 statements
     : statement
-    | statements statement
+    | statements statement { $$ = sibling_node($1, $2); }
     ;
 
 value_literal
-    : STRING
-    | LITERAL_FALSE
-    | LITERAL_TRUE
-    | NUMBER
-    | LITERAL_NAN
-    | LITERAL_INFINITY
-    | LITERAL_NULL
-    | LITERAL_UNDEFINED
+    : STRING { debug("string literal", $$); }
+    | LITERAL_FALSE { debug("boolean: false literal", $$); }
+    | LITERAL_TRUE { debug("boolean: true literal", $$); }
+    | NUMBER { debug("number literal", $$); }
+    | LITERAL_NAN { debug("number: NaN literal", $$); }
+    | LITERAL_INFINITY { debug("number: Infinity literal", $$); }
+    | LITERAL_NULL { debug("object: null literal", $$); }
+    | LITERAL_UNDEFINED { debug("undefined literal", $$); }
     ;
 
 array_literal
-    : LBRACKET RBRACKET
-    | LBRACKET array_elements RBRACKET
+    : LBRACKET RBRACKET { $$ = "[]"; debug("array: [] literal", $$); }
+    | LBRACKET array_elements RBRACKET {}
     ;
 
 array_elements
@@ -116,8 +120,8 @@ array_elements
     ;
 
 object_literal
-    : LBRACE RBRACE
-    | LBRACE object_pair RBRACE
+    : LBRACE RBRACE { $$ = "{}"; }
+    | LBRACE object_pair RBRACE {}
     ;
 
 object_pair
@@ -133,12 +137,12 @@ object_key
     ;
 
 primary_expression
-    : IDENTIFIER
-    | value_literal { debug("value literal", $$); }
-    | array_literal { debug("array literal", $$); }
-    | object_literal { debug("object literal", $$); }
+    : IDENTIFIER { $$ = identifier_node($1); }
+    | value_literal { $$ = literal_node($1); }
+    | array_literal { $$ = literal_node($1); }
+    | object_literal { $$ = literal_node($1); }
     | LPAREN expression RPAREN
-    | function_declaration { debug("function declaration", $$); }
+    | function_declaration { debug("function declaration", ""); }
     ;
 
 function_declaration
@@ -152,67 +156,72 @@ function_declaration
 
 postfix_expression
     : primary_expression
-    | primary_expression INCREASE
-    | primary_expression DECREASE
+    | primary_expression INCREASE { debug("postfix increase", ""); }
+    | primary_expression DECREASE { debug("postfix decrease", ""); }
     | postfix_expression DOT primary_expression
     | postfix_expression LPAREN RPAREN
     | postfix_expression LPAREN arguments RPAREN
-    | postfix_expression LBRACKET expression RBRACKET
+    | postfix_expression LBRACKET expression RBRACKET { debug("member access", ""); }
     ;
 
 unary_expression
     : postfix_expression
-    | unary_operator unary_expression
+    | NOT unary_expression
+    | NEW unary_expression
+    | DELETE unary_expression
+    | INSTANCEOF unary_expression
+    | TYPEOF unary_expression
+    | AWAIT unary_expression
     ;
 
 multiplicative_expression
     : unary_expression
-    | multiplicative_expression MULTIPLY unary_expression
-    | multiplicative_expression DIVIDE unary_expression
-    | multiplicative_expression MODULO unary_expression
+    | multiplicative_expression MULTIPLY unary_expression { operator_node("*", $1, $3); debug("multiply expression", ""); }
+    | multiplicative_expression DIVIDE unary_expression { operator_node("/", $1, $3); debug("divide expression", ""); }
+    | multiplicative_expression MODULO unary_expression { operator_node("%", $1, $3); debug("modulo expression", ""); }
     ;
 
 additive_expression
     : multiplicative_expression
-    | additive_expression PLUS multiplicative_expression
-    | additive_expression MINUS multiplicative_expression
+    | additive_expression PLUS multiplicative_expression { $$ = operator_node("+", $1, $3); }
+    | additive_expression MINUS multiplicative_expression { $$ = operator_node("-", $1, $3); }
     ;
 
 relational_expression
     : additive_expression
-    | relational_expression LT additive_expression
-    | relational_expression LTE additive_expression
-    | relational_expression GT additive_expression
-    | relational_expression GTE additive_expression
-    | relational_expression INSTANCEOF additive_expression
+    | relational_expression LT additive_expression { $$ = operator_node("<", $1, $3); }
+    | relational_expression LTE additive_expression { $$ = operator_node("<=", $1, $3); }
+    | relational_expression GT additive_expression { $$ = operator_node(">", $1, $3); }
+    | relational_expression GTE additive_expression {$$ = operator_node(">=", $1, $3); }
+    | relational_expression INSTANCEOF additive_expression {}
     ;
 
 equality_expression
     : relational_expression
-    | equality_expression EQ relational_expression
-    | equality_expression NOT_EQ relational_expression
-    | equality_expression EXACTLY_EQ relational_expression
-    | equality_expression EXACTLY_NOT_EQ relational_expression
+    | equality_expression EQ relational_expression { $$ = operator_node("==", $1, $3); debug("equal expression", ""); }
+    | equality_expression NOT_EQ relational_expression { $$ = operator_node("!=", $1, $3); debug("not equal expression", ""); }
+    | equality_expression EXACTLY_EQ relational_expression { $$ = operator_node("===", $1, $3); debug("exactly equal expression", ""); }
+    | equality_expression EXACTLY_NOT_EQ relational_expression { $$ = operator_node("!==", $1, $3); debug("exactly not equal expression", ""); }
     ;
 
 logical_and_expression
     : equality_expression
-    | logical_and_expression AND equality_expression
+    | logical_and_expression AND equality_expression { $$ = operator_node("&&", $1, $3); debug("logical and expression", ""); }
     ;
 
 logical_or_expression
     : logical_and_expression
-    | logical_or_expression OR logical_and_expression
+    | logical_or_expression OR logical_and_expression { $$ = operator_node("||", $1, $3); debug("logical or expression", ""); }
     ;
 
 conditional_expression
     : logical_or_expression
-    | logical_or_expression TERNARY assignment_expression COLON conditional_expression { debug("conditional expression", $$); }
+    | logical_or_expression TERNARY assignment_expression COLON conditional_expression { debug("conditional expression", ""); }
     ;
 
 assignment_expression
     : conditional_expression
-    | unary_expression assignment_operator assignment_expression { debug("assignment expression", $$); }
+    | unary_expression assignment_operator assignment_expression { $$ = operator_node("=", $1, $3); debug("assignment expression", ""); }
     ;
 
 expression
@@ -285,31 +294,26 @@ jump_statement
 
 scope
     : LBRACE RBRACE { debug("empty scope", ""); }
-    | LBRACE statements RBRACE { debug("scope", ""); }
+    | LBRACE statements RBRACE
     ;
 
 declaration
-    : variable_declaration skippable_semicolon { debug("variable declaration", $$); }
+    : variable_declaration skippable_semicolon
     ;
 
 variable_declaration
-    : type_specifier IDENTIFIER { $$ = "undefined"; }
-    | type_specifier IDENTIFIER ASSIGN expression { $$ = $1; }
+    : type_specifier IDENTIFIER { $$ = identifier_node($2); debug("variable declaration", $2); }
+    | type_specifier IDENTIFIER ASSIGN expression   {
+                                                        $$ = identifier_node($2);
+                                                        debug("variable declaration with value", $2);
+                                                        $$->child = $4;
+                                                    }
     ;
 
 type_specifier
     : VAR
     | LET
     | CONST
-    ;
-
-unary_operator
-    : NOT
-    | NEW
-    | DELETE
-    | INSTANCEOF
-    | TYPEOF
-    | AWAIT
     ;
 
 assignment_operator
