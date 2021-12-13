@@ -48,27 +48,27 @@ await                           { count(); return AWAIT; }
 
 true                            {
                                     count();
-                                    yylval.boolean_val = "true";
+                                    yylval.val = "true";
                                     return LITERAL_TRUE;
                                 }
 false                           {
                                     count();
-                                    yylval.boolean_val = "false";
+                                    yylval.val = "false";
                                     return LITERAL_FALSE;
                                 }
 NaN                             {
                                     count();
-                                    yylval.number_val = "NaN";
+                                    yylval.val = "NaN";
                                     return LITERAL_NAN;
                                 }
 NULL                            {
                                     count();
-                                    yylval.object_val = "null";
+                                    yylval.val = "null";
                                     return LITERAL_NULL;
                                 }
 UNDEFINED                       {
                                     count();
-                                    yylval.undefined_val = "undefined";
+                                    yylval.val = "undefined";
                                     return LITERAL_UNDEFINED;
                                 }
 
@@ -113,49 +113,49 @@ UNDEFINED                       {
 
 Infinity                        {
                                     count();
-                                    yylval.number_val = "Infinity";
+                                    yylval.val = "Infinity";
                                     return LITERAL_INFINITY;
                                 }
 {letter}({letter}|{digit})*     {
                                     count();
-                                    yylval.string_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return IDENTIFIER;
                                 }
 {digit}+                        {
                                     count();
-                                    yylval.number_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return NUMBER;
                                 }
 {digit}+\.{digit}+              {
                                     count();
-                                    yylval.number_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return NUMBER;
                                 }
 
 [\-\+]{digit}+                        {
                                     count();
-                                    yylval.number_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return NUMBER;
                                 }
 [\-\+]{digit}+\.{digit}+              {
                                     count();
-                                    yylval.number_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return NUMBER;
                                 }
 
 \"[^"]*\"                       {
                                     count();
-                                    yylval.string_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return STRING;
                                 }
 \'[^']*\'                       {
                                     count();
-                                    yylval.string_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return STRING;
                                 }
 \`[^`]*\`                       {
                                     count();
-                                    yylval.string_val = strdup(yytext);
+                                    yylval.val = strdup(yytext);
                                     return STRING;
                                 }
 

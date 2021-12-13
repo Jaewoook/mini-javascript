@@ -1,5 +1,8 @@
 .DS_Store
 lex.yy.c
-y.tab.*
+*y.tab.*
 javascript
 javascript-debug
+
+*y.output
+*y.vcg

@@ -1,20 +1,16 @@
 %{
-extern int column;
-int yylex();
-void yyerror(const char *msg);
-void debug(const char *msg);
+#include "parser.h"
 %}
 
 
 %union {
-    char *boolean_val;
-    char *undefined_val;
-    char *object_val;
-    char *string_val;
-    char *number_val;
+    char *val;
+    node *node;
 }
 
-%type <string_val> identifier
+%type <val> primary_expression type_specifier
+%type <val> expression assignment_expression conditional_expression
+            declaration variable_declaration
 
 %token VAR
 %token LET
@@ -46,12 +42,12 @@ void debug(const char *msg);
 %token RBRACE                           //  }
 %token LBRACKET                         //  [
 %token RBRACKET                         //  ]
-%token <boolean_val> LITERAL_TRUE        //  true
-%token <boolean_val> LITERAL_FALSE       //  false
-%token <number_val> LITERAL_NAN            //  NaN
-%token <number_val> LITERAL_INFINITY       //  Infinity
-%token <string_val> LITERAL_NULL        //  null
-%token <string_val> LITERAL_UNDEFINED   //  undefined
+%token <val> LITERAL_TRUE               //  true
+%token <val> LITERAL_FALSE              //  false
+%token <val> LITERAL_NAN                //  NaN
+%token <val> LITERAL_INFINITY           //  Infinity
+%token <val> LITERAL_NULL               //  null
+%token <val> LITERAL_UNDEFINED          //  undefined
 %token PLUS
 %token MINUS
 %token MULTIPLY
@@ -80,10 +76,11 @@ void debug(const char *msg);
 %token LTE                              //  <=
 %token GTE                              //  >=
 %token STRICT_MODE                      //  "use strict";
-%token <number_val> NUMBER
-%token <string_val> STRING
-%token <string_val> IDENTIFIER
+%token <val> NUMBER
+%token <val> STRING
+%token <val> IDENTIFIER
 
+/* %parse-param {node *root} */
 %error-verbose
 
 %%
@@ -95,10 +92,6 @@ script
 statements
     : statement
     | statements statement
-    ;
-
-identifier
-    : IDENTIFIER { $$ = $1; }
     ;
 
 value_literal
@@ -140,12 +133,12 @@ object_key
     ;
 
 primary_expression
-    : identifier
-    | value_literal { debug("value literal"); }
-    | array_literal { debug("array literal"); }
-    | object_literal { debug("object literal"); }
+    : IDENTIFIER
+    | value_literal { debug("value literal", $$); }
+    | array_literal { debug("array literal", $$); }
+    | object_literal { debug("object literal", $$); }
     | LPAREN expression RPAREN
-    | function_declaration { debug("function declaration") }
+    | function_declaration { debug("function declaration", $$); }
     ;
 
 function_declaration
@@ -214,12 +207,12 @@ logical_or_expression
 
 conditional_expression
     : logical_or_expression
-    | logical_or_expression TERNARY assignment_expression COLON conditional_expression
+    | logical_or_expression TERNARY assignment_expression COLON conditional_expression { debug("conditional expression", $$); }
     ;
 
 assignment_expression
     : conditional_expression
-    | unary_expression assignment_operator assignment_expression { debug("expression"); }
+    | unary_expression assignment_operator assignment_expression { debug("assignment expression", $$); }
     ;
 
 expression
@@ -236,35 +229,35 @@ statement
     | switch_statement
     | jump_statement
     | declaration
-    | STRICT_MODE { debug("strict mode enabled") }
+    | STRICT_MODE { debug("strict mode enabled", ""); }
     ;
 
 expression_statement
-    : expression { debug("expression statement"); }
-    | expression SEMICOLON { debug("expression statement"); }
+    : expression
+    | expression SEMICOLON
     | SEMICOLON
     ;
 
 if_statement
-    : IF LPAREN assignment_expression RPAREN scope ELSE scope { debug("if-else statement"); }
-    | IF LPAREN assignment_expression RPAREN scope { debug("if statement"); }
+    : IF LPAREN assignment_expression RPAREN scope ELSE scope { debug("if-else statement", ""); }
+    | IF LPAREN assignment_expression RPAREN scope { debug("if statement", ""); }
     ;
 
 for_statement
-    : FOR LPAREN variable_declaration SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement"); }
-    | FOR LPAREN assignment_expression SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement"); }
+    : FOR LPAREN variable_declaration SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement", ""); }
+    | FOR LPAREN assignment_expression SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement", ""); }
     ;
 
 while_statement
-    : WHILE LPAREN assignment_expression RPAREN scope { debug("while statement"); }
+    : WHILE LPAREN assignment_expression RPAREN scope { debug("while statement", ""); }
     ;
 
 do_while_statement
-    : DO scope WHILE LPAREN assignment_expression RPAREN SEMICOLON { debug("do-while statement") }
+    : DO scope WHILE LPAREN assignment_expression RPAREN SEMICOLON { debug("do-while statement", ""); }
     ;
 
 switch_statement
-    : SWITCH LPAREN assignment_expression RPAREN switch_body { debug("switch statement"); }
+    : SWITCH LPAREN assignment_expression RPAREN switch_body { debug("switch statement", ""); }
     ;
 
 switch_body
@@ -284,24 +277,24 @@ case_statement
     ;
 
 jump_statement
-    : BREAK skippable_semicolon { debug("break"); }
-    | CONTINUE skippable_semicolon { debug("continue"); }
-    | RETURN { debug("return"); }
-    | RETURN expression_statement { debug("return"); }
+    : BREAK skippable_semicolon { debug("break", ""); }
+    | CONTINUE skippable_semicolon { debug("continue", ""); }
+    | RETURN { debug("return", ""); }
+    | RETURN expression_statement { debug("return", ""); }
     ;
 
 scope
-    : LBRACE RBRACE { debug("empty scope"); }
-    | LBRACE statements RBRACE { debug("scope"); }
+    : LBRACE RBRACE { debug("empty scope", ""); }
+    | LBRACE statements RBRACE { debug("scope", ""); }
     ;
 
 declaration
-    : variable_declaration skippable_semicolon { debug("variable declaration") }
+    : variable_declaration skippable_semicolon { debug("variable declaration", $$); }
     ;
 
 variable_declaration
-    : type_specifier IDENTIFIER
-    | type_specifier IDENTIFIER ASSIGN expression
+    : type_specifier IDENTIFIER { $$ = "undefined"; }
+    | type_specifier IDENTIFIER ASSIGN expression { $$ = $1; }
     ;
 
 type_specifier
@@ -344,43 +337,3 @@ skippable_semicolon
     ;
 
 %%
-
-#include <stdio.h>
-#include "lex.yy.c"
-
-void debug(const char *msg) {
-    printf("debug: %s at line %d\n", msg, yylineno);
-}
-
-char *file_path;
-
-int main(int argc, char *argv[]) {
-    #if YYDEBUG == 1
-    yydebug = 1;
-    #endif
-
-    int ret = 0;
-    if (argc != 2) {
-        fprintf(stderr, "Error: input file not provided\nUsage: ./javascript [FILE]\n");
-        return 1;
-    }
-    file_path = argv[1];
-    yyin = fopen(file_path, "r");
-    if (yyin == NULL) {
-        fprintf(stderr, "Error: file not available.\n");
-        return 1;
-    }
-    if (!yyparse()) {
-        printf("\nParsing complete.\n");
-    } else {
-        printf("\nParsing failed.\n");
-        ret = 1;
-    }
-    fclose(yyin);
-    return ret;
-}
-
-void yyerror(const char *msg) {
-    fflush(stdout);
-    fprintf(stderr, "%s:%d:%d: %s\n\t%s\n\n", file_path, yylineno, (int) (column - yyleng), msg, yytext);
-}
