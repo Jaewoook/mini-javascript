@@ -61,12 +61,12 @@ NaN                             {
                                     yylval.val = "NaN";
                                     return LITERAL_NAN;
                                 }
-NULL                            {
+null                            {
                                     count();
                                     yylval.val = "null";
                                     return LITERAL_NULL;
                                 }
-UNDEFINED                       {
+undefined                       {
                                     count();
                                     yylval.val = "undefined";
                                     return LITERAL_UNDEFINED;
