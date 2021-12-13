@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#if YYDEBUG == 1
+#include "d-y.tab.c"
+#else
 #include "y.tab.c"
+#endif
 #include "lex.yy.c"
 
 node *put_value(char *type, char *value) {
@@ -24,7 +28,7 @@ void delete_node(node *node) {
 }
 
 void debug(const char *msg, char *val) {
-    printf("debug: %s at line %d - value (%s)\n", msg, yylineno, val);
+    printf("debug: %-30s at line %-4d value (%s)\n", msg, yylineno, val);
 }
 
 char *file_path;
@@ -45,6 +49,9 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: file not available.\n");
         return 1;
     }
+    for (int i = 0; i < 80; i++) putchar('-'); putchar('\n');
+    printf("%30s %33s\n", "debug information", "value (value)");
+    for (int i = 0; i < 80; i++) putchar('-'); putchar('\n');
     if (!yyparse()) {
         printf("\nParsing complete.\n");
     } else {
