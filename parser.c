@@ -38,13 +38,21 @@ void print_node(node *node, int depth) {
 }
 
 node *function_node(char *name, int async, node *parameters, node *statements) {
+    if (strict_mode == 0 && async == 1) {
+        yyerror("Error: async function requires strict mode.");
+    }
     node *scope = put_node(async ? AsyncScope : Scope, NULL, NULL, NULL, statements);
     node *params = put_node(Parameter, NULL, NULL, scope, parameters);
     return put_node(Function, name, NULL, NULL, params);
 }
 
-node *identifier_node(char *name) {
-    return put_node(Identifier, name, NULL, NULL, NULL);
+/**
+ * parameter mutable
+ * 1: mutable
+ * 0: immutable
+ */
+node *identifier_node(char *name, int mutable) {
+    return put_node(Identifier, name, strdup(mutable == 1 ? "mutable" : "immutable"), NULL, NULL);
 }
 
 node *literal_node(char *value) {

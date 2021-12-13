@@ -9,7 +9,7 @@
     node *node;
 }
 
-%type <val>     value_literal object_literal array_literal
+%type <val>     value_literal object_literal array_literal type_specifier
 %type <node>    script statements statement scope
                 if_statement for_statement jump_statement while_statement do_while_statement expression_statement
                 expression primary_expression assignment_expression conditional_expression postfix_expression
@@ -138,7 +138,7 @@ object_key
     ;
 
 primary_expression
-    : IDENTIFIER { $$ = identifier_node($1); }
+    : IDENTIFIER { $$ = identifier_node($1, 1); }
     | value_literal { $$ = literal_node($1); }
     | array_literal { $$ = literal_node($1); }
     | object_literal { $$ = literal_node($1); }
@@ -239,7 +239,7 @@ statement
     | switch_statement
     | jump_statement
     | declaration
-    | STRICT_MODE { debug("strict mode enabled", ""); }
+    | STRICT_MODE { strict_mode = 1; debug("strict mode enabled", ""); }
     ;
 
 expression_statement
@@ -303,18 +303,18 @@ declaration
     ;
 
 variable_declaration
-    : type_specifier IDENTIFIER { $$ = identifier_node($2); debug("variable declaration", $2); }
+    : type_specifier IDENTIFIER { $$ = identifier_node($2, !strcmp($1, "const")); debug("variable declaration", $2); }
     | type_specifier IDENTIFIER ASSIGN expression   {
-                                                        $$ = identifier_node($2);
+                                                        $$ = identifier_node($2, strcmp($1, "const"));
                                                         debug("variable declaration with value", $2);
                                                         $$->child = $4;
                                                     }
     ;
 
 type_specifier
-    : VAR
-    | LET
-    | CONST
+    : VAR { $$ = strdup("var"); }
+    | LET { $$ = strdup("let"); }
+    | CONST { $$ = strdup("const"); }
     ;
 
 assignment_operator
@@ -328,9 +328,9 @@ assignment_operator
 
 parameters
     : /* None */ { $$ = NULL; debug("empty function parameter", ""); }
-    | IDENTIFIER { $$ = identifier_node($1); debug("function parameter", $1); }
+    | IDENTIFIER { $$ = identifier_node($1, 1); debug("function parameter", $1); }
     | parameters IDENTIFIER {
-                                $$ = sibling_node($1, identifier_node($2));
+                                $$ = sibling_node($1, identifier_node($2, 1));
                             }
     ;
 

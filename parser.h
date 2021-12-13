@@ -16,7 +16,7 @@ typedef struct NODE {
 } node;
 
 node *sibling_node(node *before, node *next);
-node *identifier_node(char *name);
+node *identifier_node(char *name, int mutable);
 node *literal_node(char *value);
 node *operator_node(char *name, node *left, node *right);
 node *statement_node(char *name);
@@ -26,3 +26,4 @@ node *create_node();
 void delete_node(node *node);
 
 node *root;
+int strict_mode = 0;
