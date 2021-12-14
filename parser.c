@@ -41,11 +41,11 @@ void print_node(node *node, int depth) {
     }
 }
 
-node *function_node(char *name, int async, node *parameters, node *statements) {
+node *function_node(char *name, int async, node *parameters, node *scope) {
     if (strict_mode == 0 && async == 1) {
         yyerror("Error: async function requires strict mode.");
     }
-    node *scope = put_node(async ? AsyncScope : Scope, NULL, NULL, NULL, statements);
+    scope->type = async == 1 ? AsyncScope : Scope;
     node *params = put_node(Parameter, NULL, NULL, scope, parameters);
     return put_node(Function, name, NULL, NULL, params);
 }

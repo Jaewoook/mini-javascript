@@ -144,7 +144,7 @@ primary_expression
     | value_literal { $$ = literal_node($1); }
     | array_literal { $$ = literal_node($1); }
     | object_literal { $$ = literal_node($1); }
-    | LPAREN expression RPAREN
+    | LPAREN expression RPAREN { $$ = expression_node(NULL, $2); }
     | function_declaration { debug("function declaration", ""); }
     ;
 
@@ -169,12 +169,17 @@ postfix_expression
 
 unary_expression
     : postfix_expression
-    | NOT unary_expression
-    | NEW unary_expression
-    | DELETE unary_expression
-    | INSTANCEOF unary_expression
-    | TYPEOF unary_expression
-    | AWAIT unary_expression
+    | NOT unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("!"); }
+    | MINUS unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("-"); }
+    | NEW unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("new"); }
+    | DELETE unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("delete"); }
+    | INSTANCEOF unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("instanceof"); }
+    | TYPEOF unary_expression { $$ = expression_node("unary", $2); $$->val = strdup("typeof"); }
+    | AWAIT unary_expression    {
+                                    /* TODO async scope and strict mode check */
+                                    $$ = expression_node("unary", $2);
+                                    $$->val = strdup("await");
+                                }
     ;
 
 multiplicative_expression
@@ -195,8 +200,8 @@ relational_expression
     | relational_expression LT additive_expression { $$ = operator_node("<", $1, $3); }
     | relational_expression LTE additive_expression { $$ = operator_node("<=", $1, $3); }
     | relational_expression GT additive_expression { $$ = operator_node(">", $1, $3); }
-    | relational_expression GTE additive_expression {$$ = operator_node(">=", $1, $3); }
-    | relational_expression INSTANCEOF additive_expression {}
+    | relational_expression GTE additive_expression { $$ = operator_node(">=", $1, $3); }
+    | relational_expression INSTANCEOF additive_expression { $$ = operator_node("instanceof", $1, $3); }
     ;
 
 equality_expression
@@ -250,17 +255,24 @@ statement
 
 expression_statement
     : expression
-    | expression SEMICOLON
-    | SEMICOLON
+    | expression SEMICOLON { $$ = $1; }
+    | SEMICOLON { $$ = NULL; }
     ;
 
 if_statement
     : IF LPAREN assignment_expression RPAREN scope ELSE scope   {
                                                                     $$ = statement_node("if-else");
+                                                                    node *condition = expression_node("condition", $3);
+                                                                    $$->child = condition;
+                                                                    sibling_node(condition, $5);
+                                                                    sibling_node($5, $7);
                                                                     debug("if-else statement", "");
                                                                 }
     | IF LPAREN assignment_expression RPAREN scope  {
                                                         $$ = statement_node("if");
+                                                        node *condition = expression_node("condition", $3);
+                                                        $$->child = condition;
+                                                        sibling_node(condition, $5);
                                                         debug("if statement", "");
                                                     }
     ;
@@ -294,6 +306,7 @@ do_while_statement
 switch_statement
     : SWITCH LPAREN assignment_expression RPAREN switch_body    {
                                                                     $$ = statement_node("switch");
+                                                                    $$->child = $5;
                                                                     debug("switch statement", "");
                                                                 }
     ;
@@ -343,8 +356,8 @@ jump_statement
     ;
 
 scope
-    : LBRACE RBRACE { $$ = NULL; debug("empty scope", ""); }
-    | LBRACE statements RBRACE { $$ = $2; }
+    : LBRACE RBRACE { $$ = put_node(Scope, NULL, NULL, NULL, NULL); debug("empty scope", ""); }
+    | LBRACE statements RBRACE { $$ = put_node(Scope, NULL, NULL, NULL, $2); }
     ;
 
 declaration
