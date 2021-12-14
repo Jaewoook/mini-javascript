@@ -144,7 +144,12 @@ int main(int argc, char *argv[]) {
     if (!yyparse()) {
         printf("\nParsing complete.\n");
         printf("Number of nodes: %d\n", number_of_node);
+        putchar('\n');
+        for (int i = 0; i < 80; i++) putchar('-'); putchar('\n');
+        printf("%40s\n", "Parse Tree");
+        for (int i = 0; i < 80; i++) putchar('-'); putchar('\n');
         print_node(root, 0);
+        printf("\nFinish.\n");
     } else {
         printf("\nParsing failed.\n");
         ret = 1;
