@@ -4,7 +4,8 @@ void yyerror(const char *msg);
 void debug(const char *msg, char *val);
 
 typedef enum {
-    Statement, Identifier, Literal, Operator, Parameter, Function, Scope, AsyncScope
+    Program, Statement, Identifier, Literal, Operator, Parameter, Function, Scope, AsyncScope,
+    Jump
 } NODEType;
 
 typedef struct NODE {
@@ -21,6 +22,7 @@ node *literal_node(char *value);
 node *operator_node(char *name, node *left, node *right);
 node *statement_node(char *name);
 node *function_node(char *name, int async, node *parameters, node *scope);
+node *jump_node(char *name, node *child);
 node *put_node(NODEType type, char *name, char *value, node *next_sibling, node *child);
 node *create_node();
 void delete_node(node *node);

@@ -11,12 +11,14 @@ int number_of_node = 0;
 
 const char *get_node_type_str(NODEType type) {
     switch (type) {
-        case Statement: return "statement";
-        case Identifier: return "identifier";
-        case Literal: return "literal";
+        case Program: return "Program";
+        case Statement: return "Statement";
+        case Identifier: return "Identifier";
+        case Literal: return "Literal";
         case Operator: return "Operator";
         case Function: return "Function";
         case Parameter: return "Parameter";
+        case Jump: return "Jump";
         case Scope:
         case AsyncScope:
             return "Scope";
@@ -61,6 +63,10 @@ node *literal_node(char *value) {
 
 node *statement_node(char *name) {
     return put_node(Statement, name, NULL, NULL, NULL);
+}
+
+node *jump_node(char *name, node *child) {
+    return put_node(Jump, name, NULL, NULL, child);
 }
 
 node *operator_node(char *name, node *left, node *right) {

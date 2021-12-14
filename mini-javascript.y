@@ -91,7 +91,7 @@
 %%
 
 script
-    : statements { root = $1; }
+    : statements { root = put_node(Program, NULL, NULL, NULL, $1); }
     ;
 
 statements
@@ -227,7 +227,7 @@ assignment_expression
 
 expression
     : assignment_expression
-    | expression COMMA assignment_expression
+    | expression COMMA assignment_expression { $$ = sibling_node($1, $3); }
     ;
 
 statement
@@ -287,10 +287,10 @@ case_statement
     ;
 
 jump_statement
-    : BREAK skippable_semicolon { debug("break", ""); }
-    | CONTINUE skippable_semicolon { debug("continue", ""); }
-    | RETURN { debug("return", ""); }
-    | RETURN expression_statement { debug("return", ""); }
+    : BREAK skippable_semicolon { $$ = jump_node("break", NULL); debug("break", ""); }
+    | CONTINUE skippable_semicolon { $$ = jump_node("continue", NULL); debug("continue", ""); }
+    | RETURN { $$ = jump_node("return", NULL); debug("return", ""); }
+    | RETURN expression_statement { $$ = jump_node("return", $2); debug("return", ""); }
     ;
 
 scope
@@ -329,8 +329,8 @@ assignment_operator
 parameters
     : /* None */ { $$ = NULL; debug("empty function parameter", ""); }
     | IDENTIFIER { $$ = identifier_node($1, 1); debug("function parameter", $1); }
-    | parameters IDENTIFIER {
-                                $$ = sibling_node($1, identifier_node($2, 1));
+    | parameters COMMA IDENTIFIER {
+                                $$ = sibling_node($1, identifier_node($3, 1));
                             }
     ;
 
