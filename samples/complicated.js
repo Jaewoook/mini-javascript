@@ -39,14 +39,14 @@ window.addEventListener('keydown', function(event) {
             break;
     }
 
-    // if (playing && direction) {
-    //     move(direction);
-    // }
+    if (playing && direction) {
+        move(direction);
+    }
 });
 
 function init() {
-    // map = Array(4).fill(Array(4)).map((row) => row.fill(0));
-    map = Array(4).fill(null).map(() => { Array(4).fill(0) });
+    // map = Array(4).fill(Array(4)).map((row) => { return row.fill(0); });
+    // map = Array(4).fill(null).map(() => { Array(4).fill(0) });
 }
 
 function start() {
@@ -79,7 +79,7 @@ function move(direction) {
 }
 
 function draw() {
-    if (!(map && map instanceof Array)) {
+    if (!map) {
         return;
     }
 
@@ -92,7 +92,7 @@ function draw() {
 }
 
 function updateMap(position, value) {
-    if (!(position && position instanceof Array && value)) {
+    if (!(position && value)) {
         return;
     }
 

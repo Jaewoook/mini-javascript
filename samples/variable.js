@@ -1,3 +1,4 @@
+"use strict";
 var var_num = 1;
 var_num = 2;
 var_num = 2 + 1;
@@ -15,10 +16,11 @@ var var_object_1 = {
     number: 123,
 };
 
-// c = null;
+c = null;
 
-// var var_function = function () {
-
-// };
+var var_function = function (a, b, c) {
+    // complicated function call example
+    return a(b(c), b(c), c);
+};
 
 let let_arrow_function = () => {};

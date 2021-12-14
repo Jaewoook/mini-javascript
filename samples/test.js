@@ -1,3 +1,4 @@
+"use strict";
 var a = 1;
 const b = 123;
 let c;
