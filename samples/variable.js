@@ -1,7 +1,24 @@
-var a = 1;
-const b = 123;
-let c;
-const str = "Hello"
-const template_str = `hello`;
+var var_num = 1;
+var_num = 2;
+var_num = 2 + 1;
+const const_num = 123;
+const const_boolean = true
+let let_undefined;
+const const_string = "Hello"
+const template_string = `hello`;
+const const_array = [];
+const const_object = {};
+let let_array_number = [1, 2, 3];
+var var_object_1 = {
+    string: "hello",
+    "hello": template_string,
+    number: 123,
+};
 
-c = null;
+// c = null;
+
+// var var_function = function () {
+
+// };
+
+let let_arrow_function = () => {};

@@ -5,5 +5,5 @@ const str = "Hello"
 const template_str = `hello`;
 
 function add() {
-    return;
+    return
 }
