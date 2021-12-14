@@ -21,6 +21,7 @@ node *identifier_node(char *name, int mutable);
 node *literal_node(char *value);
 node *operator_node(char *name, node *left, node *right);
 node *statement_node(char *name);
+node *expression_node(char *name, node *expression);
 node *function_node(char *name, int async, node *parameters, node *scope);
 node *jump_node(char *name, node *child);
 node *call_node(node *expression, node *arguments);

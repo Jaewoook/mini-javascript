@@ -12,7 +12,8 @@
 
 %type <val>     value_literal object_literal array_literal type_specifier
 %type <node>    script statements statement scope
-                if_statement for_statement jump_statement while_statement do_while_statement expression_statement
+                if_statement for_statement jump_statement while_statement do_while_statement switch_statement expression_statement
+                switch_body case_statements case_statement
                 expression primary_expression assignment_expression conditional_expression postfix_expression
                 equality_expression relational_expression additive_expression multiplicative_expression unary_expression
                 logical_or_expression logical_and_expression
@@ -291,23 +292,47 @@ do_while_statement
     ;
 
 switch_statement
-    : SWITCH LPAREN assignment_expression RPAREN switch_body { debug("switch statement", ""); }
+    : SWITCH LPAREN assignment_expression RPAREN switch_body    {
+                                                                    $$ = statement_node("switch");
+                                                                    debug("switch statement", "");
+                                                                }
     ;
 
 switch_body
-    : LBRACE RBRACE
-    | LBRACE case_statements RBRACE
+    : LBRACE RBRACE { $$ = put_node(Scope, NULL, NULL, NULL, NULL); }
+    | LBRACE case_statements RBRACE { $$ = put_node(Scope, NULL, NULL, NULL, $2); }
     ;
 
 case_statements
     : case_statement
-    | case_statements case_statement
+    | case_statements case_statement { $$ = sibling_node($1, $2); }
     ;
 
 case_statement
-    : CASE assignment_expression COLON statements
-    | CASE assignment_expression COLON case_statement
-    | DEFAULT COLON statements
+    : CASE assignment_expression COLON statements   {
+                                                        node *label = expression_node("label", $2);
+                                                        node *statements = statement_node("statement");
+                                                        statements->child = $4;
+                                                        label->next_sibling = statements;
+                                                        $$ = statement_node("case");
+                                                        $$->next_sibling = label;
+                                                    }
+    | CASE assignment_expression COLON case_statement   {
+                                                            node *label = expression_node("label", $2);
+                                                            node *statements = statement_node("statement");
+                                                            label->next_sibling = statements;
+                                                            $$ = statement_node("case");
+                                                            $$->next_sibling = label;
+                                                            sibling_node($$, $4);
+                                                        }
+    | DEFAULT COLON statements  {
+                                    node *label = expression_node("label", NULL);
+                                    node *statements = statement_node("statement");
+                                    statements->child = $3;
+                                    label->next_sibling = statements;
+                                    $$ = statement_node("case");
+                                    $$->next_sibling = label;
+                                }
     ;
 
 jump_statement
@@ -369,7 +394,6 @@ parameters
 arguments
     : assignment_expression
     | arguments COMMA assignment_expression { $$ = sibling_node($1, $3); }
-    |
     ;
 
 skippable_semicolon

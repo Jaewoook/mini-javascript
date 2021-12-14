@@ -67,6 +67,10 @@ node *statement_node(char *name) {
     return put_node(Statement, name, NULL, NULL, NULL);
 }
 
+node *expression_node(char *name, node *expression) {
+    return put_node(Expression, name, NULL, NULL, expression);
+}
+
 node *jump_node(char *name, node *child) {
     return put_node(Jump, name, NULL, NULL, child);
 }
