@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include "parser.h"
 %}
 
@@ -15,7 +16,7 @@
                 expression primary_expression assignment_expression conditional_expression postfix_expression
                 equality_expression relational_expression additive_expression multiplicative_expression unary_expression
                 logical_or_expression logical_and_expression
-                variable_declaration function_declaration parameters
+                variable_declaration function_declaration parameters arguments
 
 %token VAR
 %token LET
@@ -160,8 +161,8 @@ postfix_expression
     | primary_expression INCREASE { debug("postfix increase", ""); }
     | primary_expression DECREASE { debug("postfix decrease", ""); }
     | postfix_expression DOT primary_expression
-    | postfix_expression LPAREN RPAREN
-    | postfix_expression LPAREN arguments RPAREN
+    | postfix_expression LPAREN RPAREN { $$ = call_node($1, NULL); }
+    | postfix_expression LPAREN arguments RPAREN { $$ = call_node($1, $3); }
     | postfix_expression LBRACKET expression RBRACKET { debug("member access", ""); }
     ;
 
@@ -239,7 +240,11 @@ statement
     | switch_statement
     | jump_statement
     | declaration
-    | STRICT_MODE { strict_mode = 1; debug("strict mode enabled", ""); }
+    | STRICT_MODE   {
+                        strict_mode = 1;
+                        $$ = statement_node("stric mode");
+                        debug("strict mode enabled", "");
+                    }
     ;
 
 expression_statement
@@ -249,21 +254,40 @@ expression_statement
     ;
 
 if_statement
-    : IF LPAREN assignment_expression RPAREN scope ELSE scope { debug("if-else statement", ""); }
-    | IF LPAREN assignment_expression RPAREN scope { debug("if statement", ""); }
+    : IF LPAREN assignment_expression RPAREN scope ELSE scope   {
+                                                                    $$ = statement_node("if-else");
+                                                                    debug("if-else statement", "");
+                                                                }
+    | IF LPAREN assignment_expression RPAREN scope  {
+                                                        $$ = statement_node("if");
+                                                        debug("if statement", "");
+                                                    }
     ;
 
 for_statement
-    : FOR LPAREN variable_declaration SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement", ""); }
+    : FOR LPAREN variable_declaration SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope  {
+                                                                                                                        $$ = statement_node("for");
+                                                                                                                        debug("for statement", "");
+                                                                                                                    }
     | FOR LPAREN assignment_expression SEMICOLON assignment_expression SEMICOLON assignment_expression RPAREN scope { debug("for statement", ""); }
     ;
 
 while_statement
-    : WHILE LPAREN assignment_expression RPAREN scope { debug("while statement", ""); }
+    : WHILE LPAREN assignment_expression RPAREN scope   {
+                                                            $$ = statement_node("while");
+                                                            $$->child = $3;
+                                                            sibling_node($$->child, $5);
+                                                            debug("while statement", "");
+                                                        }
     ;
 
 do_while_statement
-    : DO scope WHILE LPAREN assignment_expression RPAREN SEMICOLON { debug("do-while statement", ""); }
+    : DO scope WHILE LPAREN assignment_expression RPAREN SEMICOLON  {
+                                                                        $$ = statement_node("do-while");
+                                                                        $$->child = $5;
+                                                                        sibling_node($$->child, $2);
+                                                                        debug("do-while statement", "");
+                                                                    }
     ;
 
 switch_statement
@@ -303,9 +327,17 @@ declaration
     ;
 
 variable_declaration
-    : type_specifier IDENTIFIER { $$ = identifier_node($2, !strcmp($1, "const")); debug("variable declaration", $2); }
+    : type_specifier IDENTIFIER {
+                                    if (!strict_mode && strcmp($1, "var") != 0) {
+                                        yyerror("Error: let / const keyword requires strict mode.");
+                                    }
+                                    $$ = identifier_node($2, strcmp($1, "const") == 0 ? 0 : 1); debug("variable declaration", $2);
+                                }
     | type_specifier IDENTIFIER ASSIGN expression   {
-                                                        $$ = identifier_node($2, strcmp($1, "const"));
+                                                        if (!strict_mode && strcmp($1, "var") != 0) {
+                                                            yyerror("Error: let / const keyword requires strict mode.");
+                                                        }
+                                                        $$ = identifier_node($2, strcmp($1, "const") == 0 ? 0 : 1);
                                                         debug("variable declaration with value", $2);
                                                         $$->child = $4;
                                                     }
@@ -335,13 +367,9 @@ parameters
     ;
 
 arguments
-    : argument
-    | arguments COMMA argument
-    |
-    ;
-
-argument
     : assignment_expression
+    | arguments COMMA assignment_expression { $$ = sibling_node($1, $3); }
+    |
     ;
 
 skippable_semicolon

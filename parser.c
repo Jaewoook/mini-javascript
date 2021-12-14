@@ -13,12 +13,14 @@ const char *get_node_type_str(NODEType type) {
     switch (type) {
         case Program: return "Program";
         case Statement: return "Statement";
+        case Expression: return "Expression";
         case Identifier: return "Identifier";
         case Literal: return "Literal";
         case Operator: return "Operator";
         case Function: return "Function";
         case Parameter: return "Parameter";
         case Jump: return "Jump";
+        case Call: return "Call";
         case Scope:
         case AsyncScope:
             return "Scope";
@@ -67,6 +69,12 @@ node *statement_node(char *name) {
 
 node *jump_node(char *name, node *child) {
     return put_node(Jump, name, NULL, NULL, child);
+}
+
+node *call_node(node *expression, node *arguments) {
+    node *args = put_node(Expression, "Arguments", NULL, NULL, arguments);
+    node *expr = put_node(Expression, "Expression", NULL, args, expression);
+    return put_node(Call, NULL, NULL, NULL, expr);
 }
 
 node *operator_node(char *name, node *left, node *right) {
@@ -149,9 +157,9 @@ int main(int argc, char *argv[]) {
         printf("%40s\n", "Parse Tree");
         for (int i = 0; i < 80; i++) putchar('-'); putchar('\n');
         print_node(root, 0);
-        printf("\nFinish.\n");
+        printf("\nFinish.\n\n");
     } else {
-        printf("\nParsing failed.\n");
+        printf("\nParsing failed.\n\n");
         ret = 1;
     }
     fclose(yyin);
