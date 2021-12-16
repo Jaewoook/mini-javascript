@@ -28,5 +28,5 @@ $(YACC_OUTPUT_DEBUG): $(SOURCE_PREFIX).y
 	bison -gr all $(BISONFLAGS) d-y $(SOURCE_PREFIX).y
 
 clean:
-	rm ${LEX_OUTPUT} ${YACC_OUTPUT} ${YACC_OUTPUT_DEBUG}
-	rm ${OUTPUT} ${OUTPUT}-debug *y.output *y.vcg
+	rm ${LEX_OUTPUT} ${YACC_OUTPUT} ${OUTPUT}
+	rm ${OUTPUT}-debug ${YACC_OUTPUT_DEBUG} *y.output *y.vcg
