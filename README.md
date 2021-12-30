@@ -27,7 +27,23 @@ see [this yacc file](./mini-javascript.y).
 
 When the parser task ends, it prints debug messages and parse tree as the result.
 
-Here is the sample output:
+### Here is the sample output
+
+test.js:
+```js
+"use strict";
+var a = 1;
+const b = 123;
+let c;
+const str = "Hello"
+const template_str = `hello`;
+
+function add() {
+    return
+}
+```
+
+output:
 
 ![parse output](./docs/screenshots/parse_output.png)
 
