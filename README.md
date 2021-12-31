@@ -1,13 +1,17 @@
 # mini-javascript
 
-A mini JavaScript parser using Lex & Yacc. This parser is not production ready version. So it does not support full syntax of JavaScript and might have potential syntax issue.
+A mini JavaScript parser using Lex & Yacc. This parser is not production ready version. So it might have potential syntax issue.
 
-## Supported Keywords
+## What is mini-JavaScript?
 
-It supports most used keywords in JavaScript.
+It's not full featured, but it is a light version of JavaScript. It supports most used keywords in original JavaScript.
+
+### Supported Keywords
+
+Here is some major keywords the lexer can recognize.
 
 | category                  | keywords                                                         |
-|---------------------------|------------------------------------------------------------------|
+| ------------------------- | ---------------------------------------------------------------- |
 | variable declaration      | `var`, `let`, `const`                                            |
 | function declaration      | `function`, `=>`                                                 |
 | loop statements           | `for`, `while`, `do`                                             |
@@ -19,65 +23,115 @@ It supports most used keywords in JavaScript.
 
 You can find the entire keywords in [this file](./mini-javascript.l).
 
-## Supported Syntax
+### Supported Syntax
 
 see [this yacc file](./mini-javascript.y).
 
-## Parse Result
+### Parse Result
 
 When the parser task ends, it prints debug messages and parse tree as the result.
 
-### Here is the sample output
+**Here is the sample output**
 
-test.js:
-```js
-"use strict";
-var a = 1;
-const b = 123;
-let c;
-const str = "Hello"
-const template_str = `hello`;
+<details>
+  <summary><b>test.js (click to show / hide source</b>)</summary>
+  <p>
 
-function add() {
-    return
-}
-```
+  ```js
+  "use strict";
+  var a = 1;
+  const b = 123;
+  let c;
+  const str = "Hello"
+  const template_str = `hello`;
 
-output:
+  function add() {
+      return
+  }
+  ```
+
+</p>
+</details>
+<br>
+
+**output**
 
 ![parse output](./docs/screenshots/parse_output.png)
 
-## Prerequisites
+## Getting Started
+
+This project does not provide compiled version of binary. So you should manually compile the parser to work on your system. The following steps describe how to compile the parser.
+
+### Prerequisites
+
+Before getting started, a few tools must be installed on your system.
 
 - flex
 - bison
 - make
 - gcc
 
-## Setup
+<details>
+  <summary><b>macOS Installation</b></summary>
+  <p>
+
+  ```sh
+  # Install bison and flex
+  brew install bison flex
+
+  # Install gcc and make
+  xcode-select --install
+  ```
+
+  </p>
+</details>
+
+### Installation
+
+1. Clone this repository
 
 ```sh
-# compile all sources
-$ make
-
-# or you can compile lexer separately
-$ ./lex.sh
-
-# NOTE: if you can't run .sh file, run this command first
-$ chmod +x *.sh
+git clone https://github.com/Jaewoook/mini-javascript.git
 ```
 
-## Usage
+2. Run make command
 
 ```sh
-$ ./javascript [FILE]
+make
 ```
 
-## Test
+3. Done!
+
+also, lex and yacc standalone compile script is available.
 
 ```sh
-$ ./test.sh
+# compile lex standalone
+./lex.sh
+
+# compile yacc standalone
+./yacc.sh
 ```
+
+> :warning: **Note: if you can't run .sh file, run following command:**  
+> > **`chmod +x *.sh`**
+
+### Usage
+
+```sh
+./javascript [FILE]
+```
+
+### Test
+
+You can test the parser by executing following script. The test script automatically runs all `.js` files in the sample directory.
+
+```sh
+./test.sh
+```
+
+## Contribution
+
+You can contribute this project 
 
 ## Author
 
