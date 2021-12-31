@@ -129,9 +129,9 @@ You can test the parser by executing following script. The test script automatic
 ./test.sh
 ```
 
-## Contribution
+## Contributing
 
-You can contribute this project 
+Your contributions are always welcome! :heart_eyes: :tada:
 
 ## Author
 
